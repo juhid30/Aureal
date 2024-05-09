@@ -29,15 +29,34 @@ const uploadOnCloudinary = async (localFilePath) => {
 
 const deleteFromCloudinary = async (filePublicUrl) => {
   try {
+    // Check if filePublicUrl is provided
     if (!filePublicUrl) {
-      return; // No need to delete if the URL is not provided
+      console.log("No file URL provided. Skipping deletion.");
+      return;
     }
+    console.log(filePublicUrl);
+    const publicId = extractPublicId(filePublicUrl);
+    console.log(publicId);
+    // Delete file from Cloudinary using public ID
+    const deletionResult = await cloudinary.uploader.destroy(publicId);
+    console.log("File deletion result:", deletionResult);
 
-    await cloudinary.uploader.destroy(filePublicUrl);
-    console.log("File deleted from Cloudinary");
+    // Check if deletion was successful
+    if (deletionResult.result === "ok") {
+      console.log("File deleted successfully from Cloudinary");
+    } else {
+      console.error("Error deleting file from Cloudinary:", deletionResult);
+      throw new Error("File deletion failed");
+    }
   } catch (error) {
     console.error("Error deleting file from Cloudinary:", error);
     throw error;
   }
 };
+const extractPublicId = (filePublicUrl) => {
+  const parts = filePublicUrl.split("/");
+  const filename = parts.pop().split(".")[0];
+  return filename;
+};
+
 export { uploadOnCloudinary, deleteFromCloudinary };
